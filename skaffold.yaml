@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/warrenbailey/cloud-native:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/warrenbailey/cloud-native:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: cloud-native
+        chartPath: charts/cloud-native
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/warrenbailey/cloud-native'
+          image.tag: '{{.DIGEST_HEX}}'
